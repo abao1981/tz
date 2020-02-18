@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://unpkg.com/@reactivex/rxjs@6.5.4/dist/global/rxjs.umd.js"></script>
+</head>
+<body>
+  <script>
+    function unload(name){
+      console.log('卸载', name)
+    }
+    function load(name){
+      console.log('加载', name)
+    }
+    rxjs.timer(0, 1000).subscribe(i => {
+      unload(i - 1);
+      load(i);
+    });
+  </script>
+</body>
+</html>

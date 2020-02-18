@@ -1,0 +1,23 @@
+{
+  "name": "test1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^13.7.1",
+    "@types/ramda": "^0.26.40",
+    "@types/three": "^0.103.2",
+    "cookie": "^0.4.0",
+    "ramda": "^0.26.1",
+    "rxjs": "^6.5.4",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>rxjs</title>
+    <style>
+        .question {
+            /* -webkit-transform: translate(10px, 10px); */
+            /* transform: translate(10px, 10px); */
+            /* -webkit-transition: 0.05s -webkit-transform ease-out; */
+            /* transition: 0.05s -webkit-transform ease-out; */
+            /* transition: 0.05s transform ease-out; */
+            /* transition: 0.05s transform ease-out, 0.05s -webkit-transform ease-out; */
+            width: 140px;
+            height: 25px;
+            background: transparent;
+            border: 1px solid #ff00ff;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+    <script src="https://unpkg.com/@reactivex/rxjs@6.5.4/dist/global/rxjs.umd.js"></script>
+</head>
+<body>
+    <script src="dist/bundle.js"></script>
+    <script src="lib/data.js"></script>
+    <script src="lib/controls/MapControls.js"></script>
+    <script>
+        var camera, scene, renderer, startTime, object;
+    
+        init();
+        animate();
+
+        function init() {
+    
+            camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.1, 9999);
+            camera.position.set(100, 100, 100);
+            scene = new THREE.Scene();
+    
+            //init light0
+            light = new THREE.DirectionalLight(0xFFFFFF, 1.0, 0);
+            light.position.set(100, 100, 200);
+            scene.add(light);
+    
+            let {bufferWhen, distinctUntilChanged, take, flatMap, map, groupBy, mergeMap, reduce, switchMap} = rxjs.operators;
+
+            rxjs.from(data2).pipe(
+                groupBy(a => a[0][0]),
+                mergeMap(group$ => group$.pipe(
+                    reduce((acc, cur) => {
+                        let [[id, color, ...a], b, c, d] = cur;
+                        if (acc.length === 0) {
+                            return [[id, [color], ...a], [b], [c], [d]];
+                        } else {
+                            let [[id1, color1, ...a1], b1, c1, d1] = acc;
+                            return [[id1, [...color1, color], ...a1], [...b1, b], [...c1, c], [...d1, d]];
+                        }
+                    }, []))
+                ),
+            ).subscribe(data => {
+                let [[id, color], item2, item3, item4] = data;
+                // id, transform, convex, holes, color, opt
+                let obj = new TzExtrudeGeometry(id, item2, item3, item4, color, {});
+                obj.onAfterLoad = function(mesh){
+                    console.log(mesh.name);
+                }
+                scene.add(obj.mesh);
+            });
+
+            scene.add(drawLine(new THREE.Vector3(0, 0, 0), new THREE.Vector3(100000, 0, 0), new THREE.Color(1, 0, 0)));
+            scene.add(drawLine(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 100000, 0), new THREE.Color(0, 1, 0)));
+            scene.add(drawLine(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 100000), new THREE.Color(0, 0, 1)));
+
+            // stats = new Stats();
+            // document.body.appendChild(stats.dom);
+            // Renderer
+    
+            renderer = new THREE.WebGLRenderer({
+                //增加下面两个属性，可以抗锯齿
+                antialias: true,
+                alpha: true
+            });
+            renderer.shadowMap.enabled = true;
+            renderer.setClearColor(0xFFFFFF, 1.0);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            window.addEventListener('resize', onWindowResize, false);
+            document.body.appendChild(renderer.domElement);
+
+            // Controls
+            var controls = new THREE.MapControls(camera, renderer.domElement);
+            controls.target.set(0, 1, 0);
+            controls.update();
+    
+            let handler = new TzClickHandler(camera, scene.children.map(g => g.children).flat());
+            handler.OnUnSel = function(intersection){
+                intersection.object.material.color.set(this.userData.intersectColor);
+                intersection.object.material.opacity = 1;
+            };
+            handler.OnSel = function(intersection){
+                this.userData.intersectColor = intersection.object.material.color.clone();
+                intersection.object.material.color.set(0x0000ff);
+                intersection.object.material.opacity = 0.6;
+                console.log(intersection);
+                console.log(intersection.object.name);
+                console.log(intersection.object.uuid);
+            };
+            // 默认左键
+            // handler.AcceptMouseButton = event => event.button === 2;
+            handler.exec();
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    
+        function animate() {
+            requestAnimationFrame(animate);
+            // stats.begin();
+            renderer.render(scene, camera);
+            // stats.end();
+    
+        }
+    
+    </script>
+
+</body>
+</html>

@@ -16,7 +16,7 @@
     "cookie": "^0.4.0",
     "ramda": "^0.26.1",
     "rxjs": "^6.5.4",
-    "ts-loader": "^6.2.1",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.7.4"
   },
   "devDependencies": {}
